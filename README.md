@@ -9,6 +9,6 @@ Ends the game when someone wins or there is a draw.
 
 Coordinates to navigate:
 
-(1, 3) (2, 3) (3, 3)
-(1, 2) (2, 2) (3, 2)
-(1, 1) (2, 1) (3, 1)
+(1, 3) (2, 3) (3, 3)<br>
+(1, 2) (2, 2) (3, 2)<br>
+(1, 1) (2, 1) (3, 1)<br>
