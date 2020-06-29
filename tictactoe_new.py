@@ -1,10 +1,26 @@
+
 board = []
+cells = ""
 
-
-def make_board():
+def make_board(temp: str):
     # Making starting board with empty lines "_"
-    global board
-    board = [["_" for x in range(3)] for i in range(3)]
+    global board, cells
+    #board = [["_" for x in range(3)] for i in range(3)]
+    cells = temp
+
+    n = 0
+    for i in range(3):
+        board.append([])
+        for x in temp[n: n + 3]:
+            board[i].append(x)
+        n += 3
+    copy_board = [x[:] for x in board]
+    # shift board
+    for i in range(3):
+        for y in range(3):
+            board[y][2-i] = copy_board[i][y]
+
+
 
 
 def check_win() -> bool:
@@ -24,6 +40,7 @@ def check_win() -> bool:
     if all([x.count("_") == 0 for x in win_group]):
         print("Draw")
         return True
+
     return False
 
 
@@ -32,12 +49,19 @@ def print_board():
     print(f"""{9 * "-"}
 | {board[0][2]} {board[1][2]} {board[2][2]} |
 | {board[0][1]} {board[1][1]} {board[2][1]} |
-| {board[0][0]} {board[1][0]} {board[2][0]} |   
+| {board[0][0]} {board[1][0]} {board[2][0]} |
 {9 * "-"}""")
+#     print(f"""{9 * "-"}
+# | {board[0][0]} {board[0][1]} {board[0][2]} |
+# | {board[1][0]} {board[1][1]} {board[1][2]} |
+# | {board[2][0]} {board[2][1]} {board[2][2]} |
+# {9 * "-"}""")
 
 
 def play():
     player = "X"
+    if cells.count("X") > cells.count("O"):
+        player = "O"
     print_board()
     while True:
         if not check_win():
@@ -54,14 +78,21 @@ def play():
                         board[int(cords[0]) - 1][int(cords[1]) - 1] = player
                         player = "X"
                         print_board()
+                    if check_win():
+                        break
+                    else:
+                        print("Game not finished")
+                    break
                 else:
                     print("This cell is occupied! Choose another one!")
             else:
                 print("You should enter numbers!")
-                cords = input("Enter the coordinates: >").split()
         else:
             break
 
 
-make_board()
+cells = input("Eneter cells: >")
+
+make_board(cells)
+print(board)
 play()
