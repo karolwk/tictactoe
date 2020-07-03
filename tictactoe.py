@@ -18,7 +18,7 @@ class TicTacToe:
             return False
 
     def _check_parameters(self, *args) -> bool:
-        # Checking parameters
+        # Checking parameters if they are in tuple
         for n in args:
             if n not in self._parameters:
                 print('Bed parameters')
@@ -68,23 +68,23 @@ class TicTacToe:
                 else:
                     print("You should enter numbers!")
 
-    def _check_win(self) -> bool:
+    @staticmethod
+    def _check_win(board: []) -> bool:
         # Checking win or draw condition for hard coded situations
         # Return 'False' if there are empty lines to fill and 'True' in case of win/draw
-        win_group = ["".join(self.board[0][:3]), "".join(self.board[1][:3]), "".join(self.board[2][:3]),
-                     self.board[0][0] + self.board[1][0] + self.board[2][0],
-                     self.board[0][1] + self.board[1][1] + self.board[2][1],
-                     self.board[0][2] + self.board[1][2] + self.board[2][2],
-                     self.board[0][0] + self.board[1][1] + self.board[2][2],
-                     self.board[0][2] + self.board[1][1] + self.board[2][0],
+        win_group = ["".join(board[0][:3]), "".join(board[1][:3]), "".join(board[2][:3]),
+                     board[0][0] + board[1][0] + board[2][0],
+                     board[0][1] + board[1][1] + board[2][1],
+                     board[0][2] + board[1][2] + board[2][2],
+                     board[0][0] + board[1][1] + board[2][2],
+                     board[0][2] + board[1][1] + board[2][0],
                      ]
         for x in win_group:
             if x.count("X") == 3 or x.count("O") == 3:
-                self._reset_board()
+
                 print(f"{x[0]} wins")
                 return True
         if all([x.count("_") == 0 for x in win_group]):
-            self._reset_board()
             print("Draw")
             return True
         return False
@@ -95,13 +95,15 @@ class TicTacToe:
             if not self._check_parameters(*user_input):
                 self._print_board()
                 while not self._quit:
-                    if not self._check_win():
+                    if not self._check_win(self.board):
                         self._players(user_input[1])
-                        if not self._check_win():
+                        if not self._check_win(self.board):
                             self._players(user_input[2])
                         else:
+                            self._reset_board()
                             break
                     else:
+                        self._reset_board()
                         break
             if self._quit:
                 break
