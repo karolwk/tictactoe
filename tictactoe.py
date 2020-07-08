@@ -13,6 +13,10 @@ class StaticMethods:
             return False
 
     @staticmethod
+    def avail_spots(board) -> []:
+        return [x for x in board if isinstance(x, int)]
+
+    @staticmethod
     def change_sign(sign):
         if sign == "O":
             return "X"
@@ -27,18 +31,23 @@ class StaticMethods:
         return False
 
     @staticmethod
-    def check_win(board: []) -> bool:
+    def check_win(board: [], sign) -> bool:
         # Checking win or draw condition for hard coded situations
-        # Return 'False' if there are empty lines to fill and 'True' in case of win/draw
-        win_group = ["".join(board[0][:3]), "".join(board[1][:3]), "".join(board[2][:3]),
-                     board[0][0] + board[1][0] + board[2][0],
-                     board[0][1] + board[1][1] + board[2][1],
-                     board[0][2] + board[1][2] + board[2][2],
-                     board[0][0] + board[1][1] + board[2][2],
-                     board[0][2] + board[1][1] + board[2][0],
-                     ]
-        for x in win_group:
-            if x.count("X") == 3 or x.count("O") == 3:
+        # Return 'True' in case of win
+
+        is_matrix = all(isinstance(ele, list) for ele in board)
+        if not is_matrix:
+            # Making matrix
+            board = [[board[i + x] for x in range(3)] for i in range(0, 8, 3)]
+
+        if (board[0][0] == sign) and (board[1][1] == sign) and (board[2][2] == sign):
+            return True
+        if (board[0][2] == sign) and (board[1][1] == sign) and (board[2][0] == sign):
+            return True
+        for i in range(3):
+            if (board[i][0] == sign) and (board[i][1] == sign) and (board[i][2] == sign):
+                return True
+            if (board[0][i] == sign) and (board[1][i] == sign) and (board[2][i] == sign):
                 return True
         return False
 
@@ -57,9 +66,18 @@ class Player:
         self.player = ""
         self.board = []
         self.sign = ""
+        self.first_player = ""
+        self.second_player = ""
+
+    def _easy_ai_move(self) -> []:
+        # Returns random cords
+        while True:
+            move = [random.randrange(0, 3), random.randrange(0, 3)]
+            if not StaticMethods.check_field(move, self.board):
+                return move
 
     def _medium_ai_move(self, sign) -> []:
-        # Creating temporary boards and checking for win in specified cords for two different signs.
+        # Creating temporary board and checking for win in specified cords for two different signs.
         # First it returns cords for wining condition, secondly for blocking opponent wining move
         # If it fails it behave as Easy AI
         temp_board = copy.deepcopy(self.board)
@@ -68,19 +86,30 @@ class Player:
                 for n in range(3):
                     if self.board[i][n] == "_":
                         temp_board[i][n] = sign
-                        if StaticMethods.check_win(temp_board):
+                        if StaticMethods.check_win(temp_board, sign):
                             return [i, n]
                         else:
                             temp_board[i][n] = "_"
             sign = StaticMethods.change_sign(sign)
         return self._easy_ai_move()
 
-    def _easy_ai_move(self) -> []:
-        # Returns random cords
-        while True:
-            move = [random.randrange(0, 3), random.randrange(0, 3)]
-            if not StaticMethods.check_field(move, self.board):
-                return move
+    def _hard_ai_move(self, sign) -> []:
+        self.first_player = sign
+        self.second_player = StaticMethods.change_sign(sign)
+        # Cords that we return up accordly with number/key we get from min_max
+        cords = {0: [0, 2], 1: [1, 2], 2: [2, 2], 3: [0, 1], 4: [1, 1], 5: [2, 1], 6: [0, 0], 7: [1, 0], 8: [2, 0]}
+        # Creating new board for AI
+        new_board = [["_" for x in range(3)] for i in range(3)]
+        # Filling new board with data from original board in correct order for algorithm
+        for x in range(3):
+            for y in range(3):
+                new_board[2 - y][x] = self.board[x][y]
+        # Creating one dimension board
+        new_board = [new_board[n][i] for n in range(3) for i in range(3)]
+        # Changing "_" to index numbers
+        new_board = [num if value == "_" else value for num, value in enumerate(new_board)]
+        results = self._min_max(new_board, sign)[0]
+        return cords[results]
 
     def make_move(self, player, board, sign) -> None:
         self.board = board[:]
@@ -99,6 +128,11 @@ class Player:
             self.board[int(move[0])][int(move[1])] = sign
             print(f'Making move level {player}')
             StaticMethods.print_board(self.board)
+        if player == "hard":
+            move = self._hard_ai_move(sign)
+            self.board[move[0]][move[1]] = sign
+            print(f'Making move level {player}')
+            StaticMethods.print_board(self.board)
         if player == "user":
             # Human player logic
             while True:
@@ -115,6 +149,46 @@ class Player:
                 else:
                     print("You should enter numbers!")
 
+    def _min_max(self, board: [], player: str) -> ():
+        # Making list of available spots (index numbers)
+        spots = StaticMethods.avail_spots(board)
+        if StaticMethods.check_win(board, self.first_player):
+            return 0, 10
+        if StaticMethods.check_win(board, self.second_player):
+            return 0, -10
+        if len(spots) == 0:
+            return 0, 0
+        # dictionary that contains each move and values {board_index: value}
+        moves = {}
+        for value in spots:
+            # loop through available spots and fill 'moves' dict with indexes and values
+            moves[value] = value
+            board[value] = player
+            if player == self.first_player:
+                result = self._min_max(board, self.second_player)
+                moves[value] = result[-1]
+            else:
+                result = self._min_max(board, self.first_player)
+                moves[value] = result[-1]
+            # reset board to original value
+            board[value] = value
+        # tuple to return with best position and value
+        best_value = ()
+        # searching for best value depending on player that is playing
+        if player == self.first_player:
+            temp = -1000
+            for index, value in moves.items():
+                if value > temp:
+                    temp = value
+                    best_value = (index, value)
+        if player == self.second_player:
+            temp = 1000
+            for index, value in moves.items():
+                if value < temp:
+                    temp = value
+                    best_value = (index, value)
+        return best_value
+
     def return_board(self) -> []:
         return self.board
 
@@ -123,7 +197,6 @@ class TicTacToe:
 
     def __init__(self):
         self.board = []
-        self.sign = "X"
         self._parameters = ('user', 'easy', 'medium', 'hard', 'exit', 'start')
         self._quit = False
         self._reset_board()
@@ -144,7 +217,6 @@ class TicTacToe:
 
     def _reset_board(self) -> None:
         self.board = [["_" for x in range(3)] for i in range(3)]
-        self.sign = StaticMethods.change_sign(self.sign)
 
     def play_game(self):
         # Main game method
@@ -153,34 +225,29 @@ class TicTacToe:
         while True:
             user_input = input("Input command: ").split()
             if not self._check_parameters(*user_input):
-                self.sign = "X"
                 StaticMethods.print_board(self.board)
                 while not self._quit:
-                    if not StaticMethods.check_win(self.board):
+                    if not StaticMethods.check_win(self.board, "O"):
                         if not StaticMethods.check_draw(self.board):
-                            player1.make_move(user_input[1], self.board, self.sign)
-                            self.sign = StaticMethods.change_sign(self.sign)
+                            player1.make_move(user_input[1], self.board, "X")
                             self.board = player1.return_board()[:]
-                            if not StaticMethods.check_win(self.board):
+                            if not StaticMethods.check_win(self.board, "X"):
                                 if not StaticMethods.check_draw(self.board):
-                                    player2.make_move(user_input[2], self.board, self.sign)
-                                    self.sign = StaticMethods.change_sign(self.sign)
+                                    player2.make_move(user_input[2], self.board, "O")
                                     self.board = player1.return_board()[:]
                                 else:
                                     self._reset_board()
                                     break
                             else:
-
+                                print("X wins")
                                 self._reset_board()
-                                print(f"{self.sign} wins")
                                 break
                         else:
                             self._reset_board()
                             break
                     else:
-
+                        print("O wins")
                         self._reset_board()
-                        print(f"{self.sign} wins")
                         break
             if self._quit:
                 break
