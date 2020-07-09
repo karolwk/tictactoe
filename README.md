@@ -22,4 +22,5 @@ start, exit, user, easy, medium, hard
 <h3>Examples of using commands</h3>
 <b>start user user</b> - let you play with another user (first is "X" second "O")<br>
 <b>start user easy</b> - let you play with AI on easy difficulty (first is "X" second "O")<br>
+<b>start medium hard</b> - watch AI playing each other!<br>
 <b>exit</b> - exit the game
