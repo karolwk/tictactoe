@@ -94,6 +94,7 @@ class Player:
         return self._easy_ai_move()
 
     def _hard_ai_move(self, sign) -> []:
+        # Finds the best move based on MiniMax Algorithm in Game Theory
         self.first_player = sign
         self.second_player = StaticMethods.change_sign(sign)
         # Cords that we return up accordly with number/key we get from min_max
@@ -137,7 +138,7 @@ class Player:
             # Human player logic
             while True:
                 cords = input("Enter the coordinates: >").split()
-                if cords[0].isdigit() and cords[1].isdigit():
+                if len(cords) == 2 and cords[0].isdigit() and cords[1].isdigit():
                     if (int(cords[0]) > 3) or (int(cords[1]) > 3):
                         print("Coordinates should be from 1 to 3!")
                     elif not StaticMethods.check_field([int(cords[0]) - 1, int(cords[1]) - 1], self.board):
@@ -147,7 +148,7 @@ class Player:
                     else:
                         print("This cell is occupied! Choose another one!")
                 else:
-                    print("You should enter numbers!")
+                    print("You should enter numbers from 1 to 3 separated with space for example: '1 2'!")
 
     def _min_max(self, board: [], player: str) -> ():
         # Making list of available spots (index numbers)
@@ -230,11 +231,11 @@ class TicTacToe:
                     if not StaticMethods.check_win(self.board, "O"):
                         if not StaticMethods.check_draw(self.board):
                             player1.make_move(user_input[1], self.board, "X")
-                            self.board = player1.return_board()[:]
+                            self.board = player1.return_board()
                             if not StaticMethods.check_win(self.board, "X"):
                                 if not StaticMethods.check_draw(self.board):
                                     player2.make_move(user_input[2], self.board, "O")
-                                    self.board = player1.return_board()[:]
+                                    self.board = player1.return_board()
                                 else:
                                     self._reset_board()
                                     break
