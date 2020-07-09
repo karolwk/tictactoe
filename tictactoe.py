@@ -3,7 +3,6 @@ import copy
 
 
 class StaticMethods:
-
     @staticmethod
     def check_field(cords, board) -> bool:
         # Check for "X" or "O" in specified field
@@ -97,7 +96,7 @@ class Player:
         # Finds the best move based on MiniMax Algorithm in Game Theory
         self.first_player = sign
         self.second_player = StaticMethods.change_sign(sign)
-        # Cords that we return up accordly with number/key we get from min_max
+        # Cords that we return up accordingly with number/key we get from min_max
         cords = {0: [0, 2], 1: [1, 2], 2: [2, 2], 3: [0, 1], 4: [1, 1], 5: [2, 1], 6: [0, 0], 7: [1, 0], 8: [2, 0]}
         # Creating new board for AI
         new_board = [["_" for x in range(3)] for i in range(3)]
